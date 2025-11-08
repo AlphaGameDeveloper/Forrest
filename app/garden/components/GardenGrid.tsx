@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { moveGardenItem } from '@/app/actions/moveGardenItem';
+import { imageOverrides } from '../ImageOverrides';
 
 interface GardenItem {
   id: string;
@@ -155,11 +156,13 @@ export default function GardenGrid({ items }: GardenGridProps) {
                     onDragStart={() => handleDragStart(item)}
                     onDragEnd={handleDragEnd}
                   >
+
                     <div
                       className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'}`}
+                      style={imageOverrides.find(override => override.type === item.type && override.variant === item.variant)?.adjustment}
                     >
                       <Image
-                        src={`/images/${item.type}/${item.type}${item.variant}.png`}
+                        src={`/images/${item.type}/${item.type}${item.variant}.png?nukeTheCache=0`}
                         alt={item.type}
                         fill
                         className="object-contain drop-shadow-lg"
