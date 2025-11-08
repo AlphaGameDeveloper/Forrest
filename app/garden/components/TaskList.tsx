@@ -28,6 +28,14 @@ export default function TaskList({ tasks }: TaskListProps) {
     await createTask(formData);
     setNewTask('');
     setIsAdding(false);
+
+    // Refocus after DOM updates
+    requestAnimationFrame(() => {
+      const input = document.querySelector('input[id=tasklist-add-task-textinput]') as HTMLInputElement;
+      if (input) {
+        input.focus();
+      }
+    });
   }
 
   async function handleCompleteTask(taskId: string) {
@@ -46,6 +54,7 @@ export default function TaskList({ tasks }: TaskListProps) {
       <form onSubmit={handleAddTask} className="flex gap-2">
         <input
           type="text"
+          id='tasklist-add-task-textinput'
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Add a new task..."

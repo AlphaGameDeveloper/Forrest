@@ -51,19 +51,24 @@ export async function completeFocusSession(sessionId: string) {
   });
 
   const gridSize = 8;
-  let gridX = 0, gridY = 0;
-  let found = false;
-
-  for (let y = 0; y < gridSize && !found; y++) {
-    for (let x = 0; x < gridSize && !found; x++) {
+  
+  // Find all unoccupied tiles
+  const unoccupiedTiles: { x: number; y: number }[] = [];
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
       const occupied = existingItems.some(item => item.gridX === x && item.gridY === y);
       if (!occupied) {
-        gridX = x;
-        gridY = y;
-        found = true;
-        break;
+        unoccupiedTiles.push({ x, y });
       }
     }
+  }
+
+  // Pick a random unoccupied tile
+  let gridX = 0, gridY = 0;
+  if (unoccupiedTiles.length > 0) {
+    const randomTile = unoccupiedTiles[Math.floor(Math.random() * unoccupiedTiles.length)];
+    gridX = randomTile.x;
+    gridY = randomTile.y;
   }
 
   const variant = Math.floor(Math.random() * 4) + 1;
@@ -110,19 +115,24 @@ export async function cancelFocusSession(sessionId: string) {
   });
 
   const gridSize = 8;
-  let gridX = 0, gridY = 0;
-  let found = false;
-
-  for (let y = 0; y < gridSize && !found; y++) {
-    for (let x = 0; x < gridSize && !found; x++) {
+  
+  // Find all unoccupied tiles
+  const unoccupiedTiles: { x: number; y: number }[] = [];
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
       const occupied = existingItems.some(item => item.gridX === x && item.gridY === y);
       if (!occupied) {
-        gridX = x;
-        gridY = y;
-        found = true;
-        break;
+        unoccupiedTiles.push({ x, y });
       }
     }
+  }
+
+  // Pick a random unoccupied tile
+  let gridX = 0, gridY = 0;
+  if (unoccupiedTiles.length > 0) {
+    const randomTile = unoccupiedTiles[Math.floor(Math.random() * unoccupiedTiles.length)];
+    gridX = randomTile.x;
+    gridY = randomTile.y;
   }
 
   const variant = Math.floor(Math.random() * 9) + 1;
