@@ -137,6 +137,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
           </filter>
         </defs>
       </svg>
+
       <div
         className="relative w-full h-full"
         style={{
@@ -144,6 +145,54 @@ export default function GardenGrid({ items }: GardenGridProps) {
           transformStyle: 'preserve-3d',
         }}
       >
+        {/* Vertical waterfall tiles at (5,7) and (6,7) - actual 3D vertical surfaces */}
+        {[5, 6].map((xPos) => (
+          <div
+            key={`waterfall-${xPos}`}
+            className="absolute"
+            style={{
+              width: `${100 / 8}%`,
+              height: `${100 / 8}%`,
+              left: `${(xPos * 100) / 8}%`,
+              top: `${(7 * 100) / 8}%`,
+              transformStyle: 'preserve-3d',
+              pointerEvents: 'none',
+            }}
+          >
+            {/* The actual vertical tile face - rotated 90 degrees to be vertical */}
+            <div
+              className="absolute"
+              style={{
+                width: '100%',
+                height: '200%', // Height of the vertical wall
+                bottom: 0,
+                left: 0,
+                backgroundColor: '#4A9EDA',
+                transformOrigin: 'bottom center',
+                transform: 'rotateX(90deg)', // Makes it vertical!
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+              }}
+            >
+              {/* Animated waterfall effect on the vertical surface */}
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="absolute"
+                  style={{
+                    left: `${i * 30}%`,
+                    top: 0,
+                    width: '20%',
+                    height: '100%',
+                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, transparent 50%, rgba(255, 255, 255, 0.4) 100%)',
+                    opacity: 0.6,
+                    animation: `waterfall ${1.2 + i * 0.2}s linear infinite`,
+                    animationDelay: `${i * 0.3}s`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
         {Array.from({ length: gridSize }).map((_, y) =>
           Array.from({ length: gridSize }).map((_, x) => {
             const item = itemMap.get(`${x}-${y}`);
@@ -167,6 +216,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
               >
                 {/* Grass or River tile */}
                 <div
+                  title={`Tile @ (${x},${y})`}
                   className="absolute inset-0 border transition-colors duration-200"
                   style={{
                     backgroundSize: "cover",
