@@ -10,3 +10,47 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id          String         @id @default(cuid())
+  username    String         @unique
+  password    String
+  createdAt   DateTime       @default(now())
+  tasks       Task[]
+  focusSessions FocusSession[]
+  gardenItems GardenItem[]
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model FocusSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  duration    Int       // in minutes
+  completed   Boolean   @default(false)
+  cancelled   Boolean   @default(false)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+}
+
+model GardenItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "tree", "big-tree", "rock", "tree-dead", "big-tree-dead"
+  variant   Int      // which image variant (1-4 for trees, 1-9 for rocks)
+  gridX     Int
+  gridY     Int
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, gridX, gridY])
+}
