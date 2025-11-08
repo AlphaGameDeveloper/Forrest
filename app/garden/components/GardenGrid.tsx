@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { moveGardenItem } from '@/app/actions/moveGardenItem';
 import { imageOverrides } from '../ImageOverrides';
 
@@ -20,7 +20,19 @@ interface GardenGridProps {
 export default function GardenGrid({ items }: GardenGridProps) {
   const [draggedItem, setDraggedItem] = useState<GardenItem | null>(null);
   const [hoveredTile, setHoveredTile] = useState<{ x: number; y: number } | null>(null);
+  const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
   const gridSize = 8;
+
+  // Apply optimistic update to items
+  const displayItems = useMemo(() => {
+    if (!optimisticUpdate) return items;
+
+    return items.map(item =>
+      item.id === optimisticUpdate.id
+        ? { ...item, gridX: optimisticUpdate.x, gridY: optimisticUpdate.y }
+        : item
+    );
+  }, [items, optimisticUpdate]);
 
   // Preload all possible images on mount
   useEffect(() => {
@@ -44,7 +56,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
 
   // Create a map of grid positions to items
   const itemMap = new Map<string, GardenItem>();
-  items.forEach(item => {
+  displayItems.forEach(item => {
     itemMap.set(`${item.gridX}-${item.gridY}`, item);
   });
 
@@ -74,9 +86,18 @@ export default function GardenGrid({ items }: GardenGridProps) {
       return;
     }
 
-    // Move the item
-    await moveGardenItem(draggedItem.id, x, y);
+    // Set optimistic update immediately for instant UI feedback
+    setOptimisticUpdate({ id: draggedItem.id, x, y });
     setDraggedItem(null);
+
+    // Then update the server in the background
+    await moveGardenItem(draggedItem.id, x, y);
+
+    // Clear optimistic update once server responds (successfully or not)
+    setOptimisticUpdate(null);
+
+    // Note: No need to revert on failure since the server will send fresh data
+    // and our optimisticUpdate will be cleared, showing the real server state
   };
 
   const handleDragOver = (e: React.DragEvent, x: number, y: number) => {
@@ -136,11 +157,12 @@ export default function GardenGrid({ items }: GardenGridProps) {
                 <div
                   className="absolute inset-0 border border-green-600/20 transition-colors duration-200"
                   style={{
+                    backgroundSize: "cover",
                     background: isHovered
-                      ? 'linear-gradient(135deg, #fef08a 0%, #fde047 100%)'
+                      ? 'url(/images/grass/grass3.png?nukeTheCache=2)'
                       : (x + y) % 2 === 0
-                        ? 'linear-gradient(135deg, #86efac 0%, #4ade80 100%)'
-                        : 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                        ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                        : 'url(/images/grass/grass2.png?nukeTheCache=0)',
                   }}
                 />
 
@@ -160,6 +182,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
                     <div
                       className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'}`}
                       style={imageOverrides.find(override => override.type === item.type && override.variant === item.variant)?.adjustment}
+                      title={`Type: ${item.type}, Variant: ${item.variant} (DB: ${item.id} @ ${item.gridX},${item.gridY})`}
                     >
                       <Image
                         src={`/images/${item.type}/${item.type}${item.variant}.png?nukeTheCache=0`}
