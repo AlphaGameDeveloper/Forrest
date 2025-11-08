@@ -1,0 +1,26 @@
+{
+  "comment": "List of images to preload for better performance",
+  "trees": [
+    "/images/tree/tree1.png",
+    "/images/tree/tree2.png",
+    "/images/tree/tree3.png",
+    "/images/tree/tree4.png"
+  ],
+  "bigTrees": [
+    "/images/big-tree/big-tree1.png",
+    "/images/big-tree/big-tree2.png",
+    "/images/big-tree/big-tree3.png",
+    "/images/big-tree/big-tree4.png"
+  ],
+  "rocks": [
+    "/images/rock/rock1.png",
+    "/images/rock/rock2.png",
+    "/images/rock/rock3.png",
+    "/images/rock/rock4.png",
+    "/images/rock/rock5.png",
+    "/images/rock/rock6.png",
+    "/images/rock/rock7.png",
+    "/images/rock/rock8.png",
+    "/images/rock/rock9.png"
+  ]
+}
