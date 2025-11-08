@@ -61,7 +61,6 @@ export default function GardenGrid({ items }: GardenGridProps) {
           </filter>
         </defs>
       </svg>
-      
       <div 
         className="relative w-full h-full"
         style={{

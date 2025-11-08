@@ -17,6 +17,7 @@ model User {
   password    String
   createdAt   DateTime       @default(now())
   tasks       Task[]
+  gardenName  String         @default("Untitled Garden :(")
   focusSessions FocusSession[]
   gardenItems GardenItem[]
 }

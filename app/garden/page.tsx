@@ -37,7 +37,7 @@ export default async function GardenPage() {
         <header className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-green-800">
-              🌲 {user.username}'s Garden 🌲
+              🌲 {user.username}&apos;s Garden 🌲
             </h1>
             <div className="flex gap-4 mt-2 text-sm">
               <span className="text-green-700">🌳 Trees: {stats.trees}</span>
