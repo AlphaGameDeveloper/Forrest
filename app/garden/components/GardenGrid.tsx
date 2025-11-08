@@ -190,6 +190,84 @@ export default function GardenGrid({ items }: GardenGridProps) {
                   }}
                 />
               ))}
+
+              {/* White water splash at the bottom */}
+              <div
+                className="absolute"
+                style={{
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '15%',
+                  background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0.3) 70%, transparent 100%)',
+                  animation: 'splash 1s ease-in-out infinite',
+                }}
+              />
+
+              {/* Additional splashing particles */}
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={`splash-${i}`}
+                  className="absolute"
+                  style={{
+                    bottom: '0%',
+                    left: `${20 + i * 20}%`,
+                    width: '15%',
+                    height: '10%',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    animation: `splash ${0.8 + i * 0.1}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.15}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* BIG white water splash BELOW the waterfall tile - on the ground */}
+            <div
+              className="absolute"
+              style={{
+                bottom: '-100%', // Position it at the bottom of the vertical tile
+                left: '-50%',
+                width: '200%',
+                height: '100%',
+                transformOrigin: 'top center',
+                transform: 'rotateX(90deg)', // Make it horizontal like a puddle
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
+            >
+              {/* Main splash cloud */}
+              <div
+                className="absolute"
+                style={{
+                  top: '-200%',
+                  left: '20%',
+                  width: '60%',
+                  height: '70%',
+                  background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.5) 50%, transparent 100%)',
+                  animation: 'splash 0.7s ease-in-out infinite',
+                  borderRadius: '50%',
+                }}
+              />
+
+              {/* Additional splashing particles around the main splash */}
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div
+                  key={`splash-ground-${i}`}
+                  className="absolute"
+                  style={{
+                    top: `${-225 + (i % 3) * 20}%`,
+                    left: `${10 + i * 13}%`,
+                    width: '20%',
+                    height: '30%',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    animation: `splash ${0.6 + i * 0.08}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.1}s`,
+                  }}
+                />
+              ))}
             </div>
           </div>
         ))}
