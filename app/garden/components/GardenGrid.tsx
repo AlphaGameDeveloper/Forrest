@@ -23,6 +23,11 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
   const gridSize = 8;
 
+  // Define river positions (diagonal river flowing through the garden)
+  const riverTiles = new Set<string>([
+    '0-2', '1-2', '1-3', '2-3', '2-4', '3-4', '3-5', '4-5', '4-6', '5-6', '5-7', '6-7'
+  ]);
+
   // Apply optimistic update to items
   const displayItems = useMemo(() => {
     if (!optimisticUpdate) return items;
@@ -73,6 +78,12 @@ export default function GardenGrid({ items }: GardenGridProps) {
 
   const handleDrop = async (x: number, y: number) => {
     if (!draggedItem) return;
+
+    // Don't allow dropping on river tiles
+    if (riverTiles.has(`${x}-${y}`)) {
+      setDraggedItem(null);
+      return;
+    }
 
     // Don't allow dropping on the same position
     if (draggedItem.gridX === x && draggedItem.gridY === y) {
@@ -137,6 +148,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
           Array.from({ length: gridSize }).map((_, x) => {
             const item = itemMap.get(`${x}-${y}`);
             const isHovered = hoveredTile?.x === x && hoveredTile?.y === y;
+            const isRiver = riverTiles.has(`${x}-${y}`);
 
             return (
               <div
@@ -153,21 +165,24 @@ export default function GardenGrid({ items }: GardenGridProps) {
                 onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(x, y)}
               >
-                {/* Grass tile */}
+                {/* Grass or River tile */}
                 <div
-                  className="absolute inset-0 border border-green-600/20 transition-colors duration-200"
+                  className="absolute inset-0 border transition-colors duration-200"
                   style={{
                     backgroundSize: "cover",
-                    background: isHovered
-                      ? 'url(/images/grass/grass3.png?nukeTheCache=2)'
-                      : (x + y) % 2 === 0
-                        ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                        : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                    background: isRiver
+                      ? '#4A9EDA' // Solid blue for river
+                      : isHovered
+                        ? 'url(/images/grass/grass3.png?nukeTheCache=2)'
+                        : (x + y) % 2 === 0
+                          ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                          : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                    borderColor: isRiver ? 'rgba(59, 130, 246, 0.3)' : 'rgba(22, 163, 74, 0.2)',
                   }}
                 />
 
                 {/* Item on tile */}
-                {item && (
+                {item && !isRiver && (
                   <div
                     className="absolute inset-0 flex items-end justify-center"
                     style={{
