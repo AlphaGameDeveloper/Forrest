@@ -23,11 +23,16 @@ export default function FocusTimer() {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleComplete();
+          const newValue = prev - 1;
+          // Check if timer is complete and schedule completion
+          if (newValue <= 0) {
+            // Use setTimeout to defer the state update to the next tick
+            setTimeout(() => {
+              handleComplete();
+            }, 0);
             return 0;
           }
-          return prev - 1;
+          return newValue;
         });
       }, 1000);
     } else {
