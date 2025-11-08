@@ -5,6 +5,7 @@ import GardenGrid from './components/GardenGrid';
 import TaskList from './components/TaskList';
 import FocusTimer from './components/FocusTimer';
 import LogoutButton from './components/LogoutButton';
+import GardenName from './components/GardenName';
 
 const prisma = new PrismaClient();
 
@@ -36,9 +37,7 @@ export default async function GardenPage() {
       <div className="max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-4xl font-bold text-green-800">
-              🌲 {user.username}&apos;s Garden 🌲
-            </h1>
+            <GardenName user={user} />
             <div className="flex gap-4 mt-2 text-sm">
               <span className="text-green-700">🌳 Trees: {stats.trees}</span>
               <span className="text-green-700">🌲 Big Trees: {stats.bigTrees}</span>

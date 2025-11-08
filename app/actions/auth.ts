@@ -37,6 +37,7 @@ export async function signup(formData: FormData) {
     data: {
       username,
       password: hashedPassword,
+      gardenName: `${username}'s Garden`,
     },
   });
 
