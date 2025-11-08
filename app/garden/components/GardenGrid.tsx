@@ -22,6 +22,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const [hoveredTile, setHoveredTile] = useState<{ x: number; y: number } | null>(null);
   const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
   const gridSize = 8;
+  const lipHorizontalOffset = -16; // Controls the horizontal Z-axis offset for lip edges (negative = inward)
+  const lipVerticalOffset = 0 - 17; // Controls the vertical Y-axis offset for lip edges (negative = down, positive = up)
 
   // Define river positions (diagonal river flowing through the garden)
   const riverTiles = new Set<string>([
@@ -276,6 +278,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
             const item = itemMap.get(`${x}-${y}`);
             const isHovered = hoveredTile?.x === x && hoveredTile?.y === y;
             const isRiver = riverTiles.has(`${x}-${y}`);
+            const isEdge = x === 0 || x === gridSize - 1 || y === 0 || y === gridSize - 1;
+            const isWaterfallTile = (x === 5 || x === 6) && y === 7;
 
             return (
               <div
@@ -308,6 +312,96 @@ export default function GardenGrid({ items }: GardenGridProps) {
                     borderColor: isRiver ? 'rgba(59, 130, 246, 0.3)' : 'rgba(22, 163, 74, 0.2)',
                   }}
                 />
+
+                {/* Small vertical lip on outer edges (not on waterfall tiles) */}
+                {isEdge && !isWaterfallTile && (
+                  <>
+                    {/* Bottom edge lip - Southwest (works perfectly) */}
+                    {y === gridSize - 1 && (
+                      <div
+                        className="absolute"
+                        style={{
+                          width: '100%',
+                          height: '20%',
+                          bottom: 0,
+                          left: 0,
+                          backgroundSize: 'cover',
+                          background: isRiver
+                            ? '#4A9EDA'
+                            : (x + y) % 2 === 0
+                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                          transformOrigin: 'top center',
+                          transform: `rotateX(90deg) translateZ(${lipHorizontalOffset}px) translateY(${lipVerticalOffset}px)`,
+                          borderTop: '1px solid rgba(0, 0, 0, 0.2)',
+                        }}
+                      />
+                    )}
+                    {/* Right edge lip - Southeast (was pushed forward, needs translateX instead) */}
+                    {x === gridSize - 1 && (
+                      <div
+                        className="absolute"
+                        style={{
+                          width: '20%',
+                          height: '100%',
+                          top: 0,
+                          right: 0,
+                          backgroundSize: 'cover',
+                          background: isRiver
+                            ? '#4A9EDA'
+                            : (x + y) % 2 === 0
+                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                          transformOrigin: 'center left',
+                          transform: `rotateY(-90deg) translateZ(${lipHorizontalOffset}px) translateX(${lipVerticalOffset}px)`,
+                          borderLeft: '1px solid rgba(0, 0, 0, 0.2)',
+                        }}
+                      />
+                    )}
+                    {/* Left edge lip - Northwest (was pushed away, needs negative translateX) */}
+                    {x === 0 && (
+                      <div
+                        className="absolute"
+                        style={{
+                          width: '20%',
+                          height: '100%',
+                          top: 0,
+                          left: 0,
+                          backgroundSize: 'cover',
+                          background: isRiver
+                            ? '#4A9EDA'
+                            : (x + y) % 2 === 0
+                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                          transformOrigin: 'center right',
+                          transform: `rotateY(90deg) translateZ(${lipHorizontalOffset}px) translateX(${-lipVerticalOffset}px)`,
+                          borderRight: '1px solid rgba(0, 0, 0, 0.2)',
+                        }}
+                      />
+                    )}
+                    {/* Top edge lip - Northeast (was pushed up, needs negative translateY) */}
+                    {y === 0 && (
+                      <div
+                        className="absolute"
+                        style={{
+                          width: '100%',
+                          height: '20%',
+                          top: 0,
+                          left: 0,
+                          backgroundSize: 'cover',
+                          background: isRiver
+                            ? '#4A9EDA'
+                            : (x + y) % 2 === 0
+                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
+                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                          transformOrigin: 'bottom center',
+                          transform: `rotateX(-90deg) translateZ(${lipHorizontalOffset}px) translateY(${-lipVerticalOffset}px)`,
+                          borderBottom: '1px solid rgba(0, 0, 0, 0.2)',
+                        }}
+                      />
+                    )}
+                  </>
+                )}
 
                 {/* Item on tile */}
                 {item && !isRiver && (
