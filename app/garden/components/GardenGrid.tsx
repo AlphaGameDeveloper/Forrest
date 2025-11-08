@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { moveGardenItem } from '@/app/actions/moveGardenItem';
 import { imageOverrides } from '../ImageOverrides';
+import Bird from './Bird';
 
 interface GardenItem {
   id: string;
@@ -21,9 +22,23 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const [draggedItem, setDraggedItem] = useState<GardenItem | null>(null);
   const [hoveredTile, setHoveredTile] = useState<{ x: number; y: number } | null>(null);
   const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const gridSize = 8;
   const lipHorizontalOffset = -16; // Controls the horizontal Z-axis offset for lip edges (negative = inward)
   const lipVerticalOffset = 0 - 17; // Controls the vertical Y-axis offset for lip edges (negative = down, positive = up)
+
+  // Generate random bird positions using useState with lazy initialization
+  const [birdPositions] = useState(() => [
+    { id: 1, x: Math.random() * gridSize, y: Math.random() * gridSize },
+    { id: 2, x: Math.random() * gridSize, y: Math.random() * gridSize },
+    { id: 3, x: Math.random() * gridSize, y: Math.random() * gridSize },
+  ]);
+
+  // Only render birds after mounting to avoid hydration mismatch
+  useEffect(() => {
+    // Use queueMicrotask to avoid the setState warning
+    queueMicrotask(() => setIsMounted(true));
+  }, []);
 
   // Define river positions (diagonal river flowing through the garden)
   const riverTiles = new Set<string>([
@@ -440,6 +455,16 @@ export default function GardenGrid({ items }: GardenGridProps) {
             );
           })
         )}
+
+        {/* Flying birds - random positions, not saved - only render client-side */}
+        {isMounted && birdPositions.map((bird) => (
+          <Bird
+            key={`bird-${bird.id}`}
+            startX={bird.x}
+            startY={bird.y}
+            gridSize={gridSize}
+          />
+        ))}
       </div>
     </div>
   );
