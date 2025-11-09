@@ -390,7 +390,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           }}
                         />
                       ))}
-                      
+
                       {/* Subtle ripple effect - with unique timing per tile */}
                       <div
                         className="absolute inset-0"
@@ -508,22 +508,24 @@ export default function GardenGrid({ items }: GardenGridProps) {
                   >
 
                     <div
-                      className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'} ${(item.type === 'tree' || item.type === 'big-tree') ? 'tree-sway-hover' : ''}`}
+                      className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'}`}
                       style={imageOverrides.find(override => override.type === item.type && override.variant === item.variant)?.adjustment}
                       title={`Type: ${item.type}, Variant: ${item.variant} (DB: ${item.id} @ ${item.gridX},${item.gridY})`}
                     >
-                      <Image
-                        src={`/images/${item.type}/${item.type}${item.variant}.png`}
-                        alt={item.type}
-                        fill
-                        className="object-contain drop-shadow-lg"
-                        quality={90}
-                        priority={y < 3 && x < 3}
-                        unoptimized
-                        style={{
-                          imageRendering: 'pixelated',
-                        }}
-                      />
+                      <div className={(item.type === 'tree' || item.type === 'big-tree') ? 'tree-sway-hover' : ''}>
+                        <Image
+                          src={`/images/${item.type}/${item.type}${item.variant}.png`}
+                          alt={item.type}
+                          fill
+                          className="object-contain drop-shadow-lg"
+                          quality={90}
+                          priority={y < 3 && x < 3}
+                          unoptimized
+                          style={{
+                            imageRendering: 'pixelated',
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
