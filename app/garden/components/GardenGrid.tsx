@@ -23,6 +23,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const [hoveredTile, setHoveredTile] = useState<{ x: number; y: number } | null>(null);
   const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [mouseGridPosition, setMouseGridPosition] = useState<{ x: number; y: number } | null>(null);
   const gridSize = 8;
   const lipHorizontalOffset = -16; // Controls the horizontal Z-axis offset for lip edges (negative = inward)
   const lipVerticalOffset = 0 - 17; // Controls the vertical Y-axis offset for lip edges (negative = down, positive = up)
@@ -161,6 +162,13 @@ export default function GardenGrid({ items }: GardenGridProps) {
           transform: 'rotateX(60deg) rotateZ(45deg)',
           transformStyle: 'preserve-3d',
         }}
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * gridSize;
+          const y = ((e.clientY - rect.top) / rect.height) * gridSize;
+          setMouseGridPosition({ x, y });
+        }}
+        onMouseLeave={() => setMouseGridPosition(null)}
       >
         {/* Vertical waterfall tiles at (5,7) and (6,7) - actual 3D vertical surfaces */}
         {[5, 6].map((xPos) => (
@@ -465,6 +473,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
             gridSize={gridSize}
             items={displayItems}
             riverTiles={riverTiles}
+            mousePosition={mouseGridPosition}
           />
         ))}
       </div>

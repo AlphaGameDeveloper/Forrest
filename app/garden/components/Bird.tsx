@@ -8,16 +8,19 @@ interface BirdProps {
     gridSize: number;
     items?: Array<{ gridX: number; gridY: number; type: string }>;
     riverTiles?: Set<string>;
+    mousePosition?: { x: number; y: number } | null;
 }
 
 type BirdState = 'flying' | 'perching' | 'drinking';
 
-export default function Bird({ startX, startY, gridSize, items = [], riverTiles = new Set() }: BirdProps) {
+export default function Bird({ startX, startY, gridSize, items = [], riverTiles = new Set(), mousePosition = null }: BirdProps) {
     const [frame, setFrame] = useState(0);
     const [position, setPosition] = useState({ x: startX, y: startY });
     const [targetPosition, setTargetPosition] = useState({ x: startX, y: startY });
     const [birdState, setBirdState] = useState<BirdState>('perching');
     const [isOnWater, setIsOnWater] = useState(false);
+    const [spookTimeout, setSpookTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [lastSpookTime, setLastSpookTime] = useState(0);
 
     // Animation frame configuration
     const frameWidth = 32; // Width of each frame in pixels
@@ -54,6 +57,79 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
         return () => clearInterval(frameInterval);
     }, [birdState, idleFrames, drinkingFrames, flyingFrames]);
 
+    // Check for mouse proximity and spook the bird
+    useEffect(() => {
+        if (!mousePosition) return;
+
+        // Debounce - don't spook again within 1 second
+        const now = Date.now();
+        if (now - lastSpookTime < 1000) return;
+
+        // Calculate distance between mouse and bird
+        const dx = mousePosition.x - position.x;
+        const dy = mousePosition.y - position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Spook distance threshold (in grid units)
+        const spookDistance = 1.5;
+
+        if (distance < spookDistance) {
+            setLastSpookTime(now);
+            
+            // Clear any existing timeout
+            if (spookTimeout) {
+                clearTimeout(spookTimeout);
+            }
+
+            // Fly away to a random spot, preferring away from the cursor
+            const awayX = position.x + (position.x - mousePosition.x) * 2;
+            const awayY = position.y + (position.y - mousePosition.y) * 2;
+
+            // Clamp to grid bounds
+            const targetX = Math.max(0.5, Math.min(gridSize - 0.5, awayX));
+            const targetY = Math.max(0.5, Math.min(gridSize - 0.5, awayY));
+
+            setTargetPosition({ x: targetX, y: targetY });
+            setBirdState('flying');
+            setIsOnWater(false);
+
+            // After flying away, find a new safe spot after a short time
+            const timeout = setTimeout(() => {
+                // Find a new destination that's far from current position
+                let attempts = 0;
+                let newX = 0;
+                let newY = 0;
+
+                while (attempts < 10) {
+                    newX = Math.floor(Math.random() * gridSize);
+                    newY = Math.floor(Math.random() * gridSize);
+
+                    const distFromCurrent = Math.sqrt(
+                        Math.pow(newX - position.x, 2) + Math.pow(newY - position.y, 2)
+                    );
+
+                    if (distFromCurrent > 3) break;
+                    attempts++;
+                }
+
+                const onWater = riverTiles.has(`${newX}-${newY}`);
+                const treeAtLocation = items.find(
+                    item => item.gridX === newX && item.gridY === newY &&
+                        (item.type === 'tree' || item.type === 'big-tree')
+                );
+
+                const heightBonus = treeAtLocation ? 0.8 : 0;
+                setTargetPosition({
+                    x: newX + 0.5,
+                    y: newY + 0.5 + heightBonus
+                });
+                setIsOnWater(onWater);
+            }, 1000);
+
+            setSpookTimeout(timeout);
+        }
+    }, [mousePosition, position, gridSize, items, riverTiles, spookTimeout, lastSpookTime]);
+
     // Main bird behavior - choose destination, fly, perch, wait, repeat
     useEffect(() => {
         const chooseNewDestination = () => {
@@ -64,19 +140,19 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
 
             // Try to find a tree or water spot (70% chance to prefer these)
             const preferSpecialSpot = Math.random() < 0.7;
-            
+
             if (preferSpecialSpot) {
                 // Try to find a tree or water tile
                 while (attempts < 20 && !foundPreferredSpot) {
                     newX = Math.floor(Math.random() * gridSize);
                     newY = Math.floor(Math.random() * gridSize);
-                    
+
                     const isWater = riverTiles.has(`${newX}-${newY}`);
                     const hasTree = items.find(
                         item => item.gridX === newX && item.gridY === newY &&
                             (item.type === 'tree' || item.type === 'big-tree')
                     );
-                    
+
                     if (isWater || hasTree) {
                         foundPreferredSpot = true;
                         break;
@@ -84,7 +160,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                     attempts++;
                 }
             }
-            
+
             // If no preferred spot found, pick any random tile
             if (!foundPreferredSpot) {
                 newX = Math.floor(Math.random() * gridSize);
@@ -164,7 +240,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                 }
 
                 // Move towards target at a consistent speed
-                const speed = 0.03; // Slower speed
+                const speed = 0.15; // Much faster speed!
                 const moveX = (dx / distance) * speed;
                 const moveY = (dy / distance) * speed;
 
@@ -197,7 +273,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                 width: `${100 / gridSize}%`,
                 height: `${100 / gridSize}%`,
                 transformStyle: 'preserve-3d',
-                transition: 'left 3s ease-in-out, top 3s ease-in-out',
+                transition: 'left 0.5s ease-out, top 0.5s ease-out',
             }}
         >
             <div
