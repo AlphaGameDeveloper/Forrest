@@ -44,6 +44,9 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
             maxFrames = idleFrames;
         }
 
+        // Reset frame to 0 when state changes to sync animation with behavior
+        setFrame(0);
+
         const frameInterval = setInterval(() => {
             setFrame((prev) => (prev + 1) % maxFrames);
         }, frameSpeed);
@@ -174,7 +177,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                     height: `${frameHeight}px`, // Show one full frame height
                     left: '50%',
                     top: '50%',
-                    transform: 'rotateZ(-45deg) rotateX(-60deg) translateZ(60px) translate(-50%, -50%) scale(2)',
+                    transform: 'rotateZ(-45deg) rotateX(-60deg) translateZ(60px) translate(-50%, -50%) scale(1)',
                     transformStyle: 'preserve-3d',
                     overflow: 'hidden', // Crop to hide other frames
                     position: 'relative',
@@ -189,7 +192,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
                         imageRendering: 'pixelated',
-                        filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))',
+                        // filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))',
                         transform: `translateX(-${frame * frameWidth}px) translateY(-${yOffset}px)`,
                         transformOrigin: 'top left',
                     }}
