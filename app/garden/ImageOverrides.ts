@@ -12,7 +12,7 @@ interface ImageOverride {
 }
 export const imageOverrides: ImageOverride[] = [
     { type: 'tree', variant: 1, adjustment: { transform: 'translateY(-2.5vh)' } },
-    { type: 'tree', variant: 2, adjustment: { transform: 'translateY(-3.5vh)', zIndex: 100 } },
+    { type: 'tree', variant: 2, adjustment: { transform: 'translateY(-3.5vh)' } },
     { type: 'tree', variant: 3, adjustment: { transform: 'translateY(-3.5vh)' } },
     { type: 'tree', variant: 4, adjustment: { transform: 'translateY(-2.5vh)' } },
     { type: 'big-tree', variant: 1, adjustment: { transform: 'translateY(-3.5vh)' } },

@@ -57,9 +57,39 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
     // Main bird behavior - choose destination, fly, perch, wait, repeat
     useEffect(() => {
         const chooseNewDestination = () => {
-            // Pick a random tile on the grid
-            const newX = Math.floor(Math.random() * gridSize);
-            const newY = Math.floor(Math.random() * gridSize);
+            let newX = 0;
+            let newY = 0;
+            let attempts = 0;
+            let foundPreferredSpot = false;
+
+            // Try to find a tree or water spot (70% chance to prefer these)
+            const preferSpecialSpot = Math.random() < 0.7;
+            
+            if (preferSpecialSpot) {
+                // Try to find a tree or water tile
+                while (attempts < 20 && !foundPreferredSpot) {
+                    newX = Math.floor(Math.random() * gridSize);
+                    newY = Math.floor(Math.random() * gridSize);
+                    
+                    const isWater = riverTiles.has(`${newX}-${newY}`);
+                    const hasTree = items.find(
+                        item => item.gridX === newX && item.gridY === newY &&
+                            (item.type === 'tree' || item.type === 'big-tree')
+                    );
+                    
+                    if (isWater || hasTree) {
+                        foundPreferredSpot = true;
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // If no preferred spot found, pick any random tile
+            if (!foundPreferredSpot) {
+                newX = Math.floor(Math.random() * gridSize);
+                newY = Math.floor(Math.random() * gridSize);
+            }
 
             // Check if landing on water
             const onWater = riverTiles.has(`${newX}-${newY}`);
@@ -92,15 +122,15 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                 // If on water, drink; otherwise perch
                 if (isOnWater) {
                     setBirdState('drinking');
-                    // Drink for 2-4 seconds then choose new destination
-                    const drinkTime = 2000 + Math.random() * 2000;
+                    // Drink for 5-10 seconds then choose new destination
+                    const drinkTime = 5000 + Math.random() * 5000;
                     setTimeout(() => {
                         chooseNewDestination();
                     }, drinkTime);
                 } else {
                     setBirdState('perching');
-                    // Wait for random time (2-6 seconds) then choose new destination
-                    const waitTime = 2000 + Math.random() * 4000;
+                    // Wait for random time (8-15 seconds) then choose new destination
+                    const waitTime = 8000 + Math.random() * 7000;
                     setTimeout(() => {
                         chooseNewDestination();
                     }, waitTime);
@@ -113,7 +143,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
         // Start with first destination after a brief delay
         const initialTimeout = setTimeout(() => {
             chooseNewDestination();
-        }, 1000 + Math.random() * 2000);
+        }, 2000 + Math.random() * 3000);
 
         return () => {
             clearInterval(checkInterval);
@@ -134,7 +164,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                 }
 
                 // Move towards target at a consistent speed
-                const speed = 0.05;
+                const speed = 0.03; // Slower speed
                 const moveX = (dx / distance) * speed;
                 const moveY = (dy / distance) * speed;
 
@@ -167,7 +197,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
                 width: `${100 / gridSize}%`,
                 height: `${100 / gridSize}%`,
                 transformStyle: 'preserve-3d',
-                transition: 'left 2s ease-in-out, top 2s ease-in-out',
+                transition: 'left 3s ease-in-out, top 3s ease-in-out',
             }}
         >
             <div
