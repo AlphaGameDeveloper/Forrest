@@ -75,7 +75,7 @@ export default function Bird({ startX, startY, gridSize, items = [], riverTiles 
 
         if (distance < spookDistance) {
             setLastSpookTime(now);
-            
+
             // Clear any existing timeout
             if (spookTimeout) {
                 clearTimeout(spookTimeout);

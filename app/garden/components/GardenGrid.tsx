@@ -120,13 +120,19 @@ export default function GardenGrid({ items }: GardenGridProps) {
     setDraggedItem(null);
 
     // Then update the server in the background
-    await moveGardenItem(draggedItem.id, x, y);
+    const result = await moveGardenItem(draggedItem.id, x, y);
 
-    // Clear optimistic update once server responds (successfully or not)
-    setOptimisticUpdate(null);
-
-    // Note: No need to revert on failure since the server will send fresh data
-    // and our optimisticUpdate will be cleared, showing the real server state
+    // Only clear optimistic update after the server responds successfully
+    // Keep it if failed so the UI doesn't jump back
+    if (result.success) {
+      // Wait a tiny bit for the revalidated data to arrive
+      setTimeout(() => {
+        setOptimisticUpdate(null);
+      }, 100);
+    } else {
+      // On failure, revert the optimistic update
+      setOptimisticUpdate(null);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent, x: number, y: number) => {
