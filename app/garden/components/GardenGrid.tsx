@@ -28,7 +28,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const gridSize = 8;
   const lipHorizontalOffset = -16; // Controls the horizontal Z-axis offset for lip edges (negative = inward)
   const lipVerticalOffset = 0 - 17; // Controls the vertical Y-axis offset for lip edges (negative = down, positive = up)
-  
+
   // Debounce timer for hover state
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -150,10 +150,10 @@ export default function GardenGrid({ items }: GardenGridProps) {
 
   const handleDragOver = (e: React.DragEvent, x: number, y: number) => {
     e.preventDefault();
-    
+
     // Update immediately for responsiveness
     setHoveredTile({ x, y });
-    
+
     // Clear any existing timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -165,7 +165,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
-    
+
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredTile(null);
     }, 50);
@@ -366,8 +366,42 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           ? 'url(/images/grass/grass1.png)'
                           : 'url(/images/grass/grass2.png)',
                     borderColor: isRiver ? 'rgba(59, 130, 246, 0.3)' : 'rgba(22, 163, 74, 0.2)',
+                    overflow: 'hidden', // Contain animations within the tile
                   }}
-                />
+                >
+                  {/* Flowing water animation for river tiles */}
+                  {isRiver && (
+                    <>
+                      {/* Animated water flow lines */}
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={`flow-${i}`}
+                          className="absolute"
+                          style={{
+                            left: `${-20 + i * 40}%`,
+                            top: '-50%',
+                            width: '30%',
+                            height: '200%',
+                            background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.3) 55%, transparent 100%)',
+                            transform: 'rotate(45deg)',
+                            animation: `riverFlow ${3 + i * 0.5}s linear infinite`,
+                            animationDelay: `${i * 0.8}s`,
+                            opacity: 0.6,
+                          }}
+                        />
+                      ))}
+                      
+                      {/* Subtle ripple effect */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+                          animation: 'ripple 4s ease-in-out infinite',
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
 
                 {/* Small vertical lip on outer edges (not on waterfall tiles) */}
                 {isEdge && !isWaterfallTile && (

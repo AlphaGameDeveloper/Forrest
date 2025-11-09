@@ -72,6 +72,33 @@ body {
   }
 }
 
+/* River flowing animation - diagonal flow */
+@keyframes riverFlow {
+  0% {
+    transform: translate(-100%, -100%) rotate(45deg);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(200%, 200%) rotate(45deg);
+    opacity: 0.4;
+  }
+}
+
+/* Subtle ripple effect for water */
+@keyframes ripple {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
 /* Tree sway animation on hover */
 @keyframes tree-sway {
   0%, 100% {
