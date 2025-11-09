@@ -463,6 +463,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
             startX={bird.x}
             startY={bird.y}
             gridSize={gridSize}
+            items={displayItems}
+            riverTiles={riverTiles}
           />
         ))}
       </div>

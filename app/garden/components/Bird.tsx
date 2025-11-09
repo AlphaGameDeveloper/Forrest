@@ -6,42 +6,154 @@ interface BirdProps {
     startX: number;
     startY: number;
     gridSize: number;
+    items?: Array<{ gridX: number; gridY: number; type: string }>;
+    riverTiles?: Set<string>;
 }
 
-export default function Bird({ startX, startY, gridSize }: BirdProps) {
+type BirdState = 'flying' | 'perching' | 'drinking';
+
+export default function Bird({ startX, startY, gridSize, items = [], riverTiles = new Set() }: BirdProps) {
     const [frame, setFrame] = useState(0);
     const [position, setPosition] = useState({ x: startX, y: startY });
-    const totalFrames = 4; // Assuming 4 frames in the sprite sheet
+    const [targetPosition, setTargetPosition] = useState({ x: startX, y: startY });
+    const [birdState, setBirdState] = useState<BirdState>('perching');
+    const [isOnWater, setIsOnWater] = useState(false);
+
+    // Animation frame configuration
     const frameWidth = 32; // Width of each frame in pixels
     const frameHeight = 32; // Height of each frame in pixels
 
-    // Animate sprite frames
+    // Different animations use different rows and frame counts
+    const idleFrames = 2; // Row 0 - idle animation (2 frames)
+    const flyingFrames = 8; // Row 1 - flying animation (8 frames)
+    const drinkingFrames = 3; // Row 2 - eating/drinking animation (3 frames)
+
+    // Animate sprite frames - different speeds and frame counts for different states
     useEffect(() => {
+        let frameSpeed: number;
+        let maxFrames: number;
+
+        if (birdState === 'flying') {
+            frameSpeed = 100;
+            maxFrames = flyingFrames;
+        } else if (birdState === 'drinking') {
+            frameSpeed = 250; // Slower drinking animation
+            maxFrames = drinkingFrames;
+        } else { // perching/idle
+            frameSpeed = 200;
+            maxFrames = idleFrames;
+        }
+
         const frameInterval = setInterval(() => {
-            setFrame((prev) => (prev + 1) % totalFrames);
-        }, 150); // Change frame every 150ms
+            setFrame((prev) => (prev + 1) % maxFrames);
+        }, frameSpeed);
 
         return () => clearInterval(frameInterval);
-    }, [totalFrames]);
+    }, [birdState, idleFrames, drinkingFrames, flyingFrames]);
 
-    // Animate bird position
+    // Main bird behavior - choose destination, fly, perch, wait, repeat
     useEffect(() => {
+        const chooseNewDestination = () => {
+            // Pick a random tile on the grid
+            const newX = Math.floor(Math.random() * gridSize);
+            const newY = Math.floor(Math.random() * gridSize);
+
+            // Check if landing on water
+            const onWater = riverTiles.has(`${newX}-${newY}`);
+
+            // Check if there's a tree at this location for extra height
+            const treeAtLocation = items.find(
+                item => item.gridX === newX && item.gridY === newY &&
+                    (item.type === 'tree' || item.type === 'big-tree')
+            );
+
+            // Add 0.5 to center the bird on the tile, plus extra height if tree
+            const heightBonus = treeAtLocation ? 0.8 : 0;
+            setTargetPosition({
+                x: newX + 0.5,
+                y: newY + 0.5 + heightBonus
+            });
+            setIsOnWater(onWater);
+            setBirdState('flying');
+        };
+
+        const checkIfReachedTarget = () => {
+            const dx = targetPosition.x - position.x;
+            const dy = targetPosition.y - position.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // If close enough to target, start perching or drinking
+            if (distance < 0.1 && birdState === 'flying') {
+                setPosition({ x: targetPosition.x, y: targetPosition.y });
+
+                // If on water, drink; otherwise perch
+                if (isOnWater) {
+                    setBirdState('drinking');
+                    // Drink for 2-4 seconds then choose new destination
+                    const drinkTime = 2000 + Math.random() * 2000;
+                    setTimeout(() => {
+                        chooseNewDestination();
+                    }, drinkTime);
+                } else {
+                    setBirdState('perching');
+                    // Wait for random time (2-6 seconds) then choose new destination
+                    const waitTime = 2000 + Math.random() * 4000;
+                    setTimeout(() => {
+                        chooseNewDestination();
+                    }, waitTime);
+                }
+            }
+        };
+
+        const checkInterval = setInterval(checkIfReachedTarget, 100);
+
+        // Start with first destination after a brief delay
+        const initialTimeout = setTimeout(() => {
+            chooseNewDestination();
+        }, 1000 + Math.random() * 2000);
+
+        return () => {
+            clearInterval(checkInterval);
+            clearTimeout(initialTimeout);
+        };
+    }, [gridSize, position, targetPosition, birdState, items, riverTiles, isOnWater]);    // Smooth movement towards target when flying
+    useEffect(() => {
+        if (birdState !== 'flying') return;
+
         const moveInterval = setInterval(() => {
             setPosition((prev) => {
-                // Random movement
-                const dx = (Math.random() - 0.5) * 2;
-                const dy = (Math.random() - 0.5) * 2;
+                const dx = targetPosition.x - prev.x;
+                const dy = targetPosition.y - prev.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Keep bird within grid bounds with some padding
-                const newX = Math.max(0.5, Math.min(gridSize - 0.5, prev.x + dx));
-                const newY = Math.max(0.5, Math.min(gridSize - 0.5, prev.y + dy));
+                if (distance < 0.1) {
+                    return prev; // Close enough
+                }
 
-                return { x: newX, y: newY };
+                // Move towards target at a consistent speed
+                const speed = 0.05;
+                const moveX = (dx / distance) * speed;
+                const moveY = (dy / distance) * speed;
+
+                return {
+                    x: prev.x + moveX,
+                    y: prev.y + moveY
+                };
             });
-        }, 2000); // Move every 2 seconds
+        }, 50);
 
         return () => clearInterval(moveInterval);
-    }, [gridSize]);
+    }, [birdState, targetPosition]);
+
+    // Calculate which row to show based on state
+    const getAnimationRow = () => {
+        if (birdState === 'drinking') return 2; // Row 2 - eating/drinking
+        if (birdState === 'flying') return 1; // Row 1 - flying
+        return 0; // Row 0 - idle/perching
+    };
+
+    const currentRow = getAnimationRow();
+    const yOffset = currentRow * frameHeight; // Which row in the sprite sheet
 
     return (
         <div
@@ -58,11 +170,11 @@ export default function Bird({ startX, startY, gridSize }: BirdProps) {
             <div
                 className="absolute"
                 style={{
-                    width: `${frameWidth / 2}px`, // Crop width to show one bird
-                    height: `${frameHeight / 3}px`, // Crop height to middle third
+                    width: `${frameWidth}px`, // Show one full frame
+                    height: `${frameHeight}px`, // Show one full frame height
                     left: '50%',
                     top: '50%',
-                    transform: 'rotateZ(-45deg) rotateX(-60deg) translateZ(60px) translate(-50%, -50%) scale(2)', // Scale AFTER cropping
+                    transform: 'rotateZ(-45deg) rotateX(-60deg) translateZ(60px) translate(-50%, -50%) scale(2)',
                     transformStyle: 'preserve-3d',
                     overflow: 'hidden', // Crop to hide other frames
                     position: 'relative',
@@ -70,15 +182,15 @@ export default function Bird({ startX, startY, gridSize }: BirdProps) {
             >
                 <div
                     style={{
-                        width: `${frameWidth * totalFrames}px`, // Full sprite sheet width
-                        height: `${frameHeight}px`,
+                        width: `${frameWidth * 8}px`, // Full sprite sheet width (8 frames max in row 1)
+                        height: `${frameHeight * 3}px`, // Full sprite sheet height (3 rows)
                         backgroundImage: 'url(/images/bird/bird.png)',
                         backgroundPosition: '0 0',
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
                         imageRendering: 'pixelated',
                         filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))',
-                        transform: `translateX(-${frame * frameWidth}px) translateY(-${frameHeight / 3}px)`, // Shift horizontally for frame and vertically to show middle
+                        transform: `translateX(-${frame * frameWidth}px) translateY(-${yOffset}px)`,
                         transformOrigin: 'top left',
                     }}
                 />
