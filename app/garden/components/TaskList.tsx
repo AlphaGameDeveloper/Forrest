@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { createTask, completeTask, deleteTask } from '@/app/actions/tasks';
 
 interface Task {
   id: string;
@@ -23,11 +22,23 @@ export default function TaskList({ tasks }: TaskListProps) {
     if (!newTask.trim()) return;
 
     setIsAdding(true);
-    const formData = new FormData();
-    formData.append('title', newTask);
-    await createTask(formData);
-    setNewTask('');
-    setIsAdding(false);
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTask }),
+      });
+      
+      if (response.ok) {
+        setNewTask('');
+        // Refresh to get updated data
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    } finally {
+      setIsAdding(false);
+    }
 
     // Refocus after DOM updates
     requestAnimationFrame(() => {
@@ -39,11 +50,35 @@ export default function TaskList({ tasks }: TaskListProps) {
   }
 
   async function handleCompleteTask(taskId: string) {
-    await completeTask(taskId);
+    try {
+      const response = await fetch('/api/tasks/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId }),
+      });
+      
+      if (response.ok) {
+        // Refresh to get updated data
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to complete task:', error);
+    }
   }
 
   async function handleDeleteTask(taskId: string) {
-    await deleteTask(taskId);
+    try {
+      const response = await fetch(`/api/tasks?id=${taskId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        // Refresh to get updated data
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
   }
 
   const activeTasks = tasks.filter(t => !t.completed);
@@ -79,7 +114,7 @@ export default function TaskList({ tasks }: TaskListProps) {
             <div key={task.id} className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
               <button
                 onClick={() => handleCompleteTask(task.id)}
-                className="flex-shrink-0 w-6 h-6 border-2 border-green-600 rounded hover:bg-green-600 transition-colors"
+                className="shrink-0 w-6 h-6 border-2 border-green-600 rounded hover:bg-green-600 transition-colors"
               />
               <span className="flex-1 text-green-800">{task.title}</span>
               <button
@@ -98,7 +133,7 @@ export default function TaskList({ tasks }: TaskListProps) {
           <h3 className="font-semibold text-green-800">Completed ({completedTasks.length})</h3>
           {completedTasks.slice(0, 5).map(task => (
             <div key={task.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg opacity-60">
-              <div className="flex-shrink-0 w-6 h-6 bg-green-600 rounded flex items-center justify-center text-white text-xs">
+              <div className="shrink-0 w-6 h-6 bg-green-600 rounded flex items-center justify-center text-white text-xs">
                 ✓
               </div>
               <span className="flex-1 text-gray-600 line-through">{task.title}</span>

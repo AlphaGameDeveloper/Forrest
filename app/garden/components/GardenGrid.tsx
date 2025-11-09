@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
-import { moveGardenItem } from '@/app/actions/moveGardenItem';
 import { imageOverrides } from '../ImageOverrides';
 import Bird from './Bird';
 
@@ -120,17 +119,29 @@ export default function GardenGrid({ items }: GardenGridProps) {
     setDraggedItem(null);
 
     // Then update the server in the background
-    const result = await moveGardenItem(draggedItem.id, x, y);
+    try {
+      const response = await fetch('/api/garden/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: draggedItem.id, newGridX: x, newGridY: y }),
+      });
+      const result = await response.json();
 
-    // Only clear optimistic update after the server responds successfully
-    // Keep it if failed so the UI doesn't jump back
-    if (result.success) {
-      // Wait a tiny bit for the revalidated data to arrive
-      setTimeout(() => {
+      // Only clear optimistic update after the server responds successfully
+      // Keep it if failed so the UI doesn't jump back
+      if (result.success) {
+        // Wait a tiny bit for the revalidated data to arrive
+        setTimeout(() => {
+          setOptimisticUpdate(null);
+          // Refresh the page to get updated data
+          window.location.reload();
+        }, 100);
+      } else {
+        // On failure, revert the optimistic update
         setOptimisticUpdate(null);
-      }, 100);
-    } else {
-      // On failure, revert the optimistic update
+      }
+    } catch (error) {
+      console.error('Failed to move item:', error);
       setOptimisticUpdate(null);
     }
   };

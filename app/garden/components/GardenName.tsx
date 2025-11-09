@@ -1,6 +1,4 @@
 "use client";
-import setGardenName from "@/app/actions/setGardenName";
-import { User } from "@/app/generated/prisma/client";
 // Copyright (c) 2025 Damien Boisvert (AlphaGameDeveloper)
 // 
 // This software is released under the MIT License.
@@ -15,12 +13,27 @@ export default function GardenName({ user }: { user: { gardenName: string, id: s
         setName(user.gardenName);
     }, [user.gardenName, name]);
 
-    const handleEdit = () => {
+    const handleEdit = async () => {
         const newName = prompt("Enter new garden name", name);
         if (newName === null) return; // user cancelled
-        setGardenName(user.id, newName);
+        
         const trimmed = newName.trim();
-        if (trimmed) setName(trimmed);
+        if (!trimmed) return;
+        
+        try {
+            const response = await fetch('/api/garden/name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gardenName: trimmed }),
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                setName(trimmed);
+            }
+        } catch (error) {
+            console.error('Failed to update garden name:', error);
+        }
     };
 
     return (
