@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { imageOverrides } from '../ImageOverrides';
 import Bird from './Bird';
 
@@ -18,6 +19,7 @@ interface GardenGridProps {
 }
 
 export default function GardenGrid({ items }: GardenGridProps) {
+  const router = useRouter();
   const [draggedItem, setDraggedItem] = useState<GardenItem | null>(null);
   const [hoveredTile, setHoveredTile] = useState<{ x: number; y: number } | null>(null);
   const [optimisticUpdate, setOptimisticUpdate] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -130,12 +132,9 @@ export default function GardenGrid({ items }: GardenGridProps) {
       // Only clear optimistic update after the server responds successfully
       // Keep it if failed so the UI doesn't jump back
       if (result.success) {
-        // Wait a tiny bit for the revalidated data to arrive
-        setTimeout(() => {
-          setOptimisticUpdate(null);
-          // Refresh the page to get updated data
-          window.location.reload();
-        }, 100);
+        // Use Next.js router to refresh data without full page reload
+        setOptimisticUpdate(null);
+        router.refresh();
       } else {
         // On failure, revert the optimistic update
         setOptimisticUpdate(null);
@@ -345,10 +344,10 @@ export default function GardenGrid({ items }: GardenGridProps) {
                     background: isRiver
                       ? '#4A9EDA' // Solid blue for river
                       : isHovered
-                        ? 'url(/images/grass/grass3.png?nukeTheCache=2)'
+                        ? 'url(/images/grass/grass3.png)'
                         : (x + y) % 2 === 0
-                          ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                          : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                          ? 'url(/images/grass/grass1.png)'
+                          : 'url(/images/grass/grass2.png)',
                     borderColor: isRiver ? 'rgba(59, 130, 246, 0.3)' : 'rgba(22, 163, 74, 0.2)',
                   }}
                 />
@@ -369,8 +368,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           background: isRiver
                             ? '#4A9EDA'
                             : (x + y) % 2 === 0
-                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                              ? 'url(/images/grass/grass1.png)'
+                              : 'url(/images/grass/grass2.png)',
                           transformOrigin: 'top center',
                           transform: `rotateX(90deg) translateZ(${lipHorizontalOffset}px) translateY(${lipVerticalOffset}px)`,
                           borderTop: '1px solid rgba(0, 0, 0, 0.2)',
@@ -390,8 +389,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           background: isRiver
                             ? '#4A9EDA'
                             : (x + y) % 2 === 0
-                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                              ? 'url(/images/grass/grass1.png)'
+                              : 'url(/images/grass/grass2.png)',
                           transformOrigin: 'center left',
                           transform: `rotateY(-90deg) translateZ(${lipHorizontalOffset}px) translateX(${lipVerticalOffset}px)`,
                           borderLeft: '1px solid rgba(0, 0, 0, 0.2)',
@@ -411,8 +410,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           background: isRiver
                             ? '#4A9EDA'
                             : (x + y) % 2 === 0
-                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                              ? 'url(/images/grass/grass1.png)'
+                              : 'url(/images/grass/grass2.png)',
                           transformOrigin: 'center right',
                           transform: `rotateY(90deg) translateZ(${lipHorizontalOffset}px) translateX(${-lipVerticalOffset}px)`,
                           borderRight: '1px solid rgba(0, 0, 0, 0.2)',
@@ -432,8 +431,8 @@ export default function GardenGrid({ items }: GardenGridProps) {
                           background: isRiver
                             ? '#4A9EDA'
                             : (x + y) % 2 === 0
-                              ? 'url(/images/grass/grass1.png?nukeTheCache=1)'
-                              : 'url(/images/grass/grass2.png?nukeTheCache=0)',
+                              ? 'url(/images/grass/grass1.png)'
+                              : 'url(/images/grass/grass2.png)',
                           transformOrigin: 'bottom center',
                           transform: `rotateX(-90deg) translateZ(${lipHorizontalOffset}px) translateY(${-lipVerticalOffset}px)`,
                           borderBottom: '1px solid rgba(0, 0, 0, 0.2)',
@@ -462,7 +461,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
                       title={`Type: ${item.type}, Variant: ${item.variant} (DB: ${item.id} @ ${item.gridX},${item.gridY})`}
                     >
                       <Image
-                        src={`/images/${item.type}/${item.type}${item.variant}.png?nukeTheCache=0`}
+                        src={`/images/${item.type}/${item.type}${item.variant}.png`}
                         alt={item.type}
                         fill
                         className="object-contain drop-shadow-lg"
