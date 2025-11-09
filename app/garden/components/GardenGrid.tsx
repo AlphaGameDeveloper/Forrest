@@ -372,7 +372,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
                   {/* Flowing water animation for river tiles */}
                   {isRiver && (
                     <>
-                      {/* Animated water flow lines */}
+                      {/* Animated water flow lines - with unique timing per tile */}
                       {[0, 1, 2].map((i) => (
                         <div
                           key={`flow-${i}`}
@@ -385,18 +385,19 @@ export default function GardenGrid({ items }: GardenGridProps) {
                             background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.3) 55%, transparent 100%)',
                             transform: 'rotate(45deg)',
                             animation: `riverFlow ${3 + i * 0.5}s linear infinite`,
-                            animationDelay: `${i * 0.8}s`,
+                            animationDelay: `${(i * 0.8) + (x * 0.3) + (y * 0.2)}s`,
                             opacity: 0.6,
                           }}
                         />
                       ))}
                       
-                      {/* Subtle ripple effect */}
+                      {/* Subtle ripple effect - with unique timing per tile */}
                       <div
                         className="absolute inset-0"
                         style={{
                           background: 'radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
                           animation: 'ripple 4s ease-in-out infinite',
+                          animationDelay: `${(x * 0.4) + (y * 0.3)}s`,
                         }}
                       />
                     </>
