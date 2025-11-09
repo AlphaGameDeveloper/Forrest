@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
     console.log('[API /api/garden/name] POST request received');
-    
+
     try {
         const body = await request.json();
         const { gardenName } = body;
-        
+
         console.log('[API /api/garden/name] Request body:', { gardenName });
 
         if (!gardenName || typeof gardenName !== 'string') {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('[API /api/garden/name] Successfully updated garden name for user:', userId);
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/garden/name] Error:', error);

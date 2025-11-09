@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
     console.log('[API /api/tasks] POST request received');
-    
+
     try {
         const body = await request.json();
         const { title } = body;
-        
+
         console.log('[API /api/tasks] Request body:', { title });
 
         const userId = await getUserSession();
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('[API /api/tasks] Successfully created task');
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/tasks] Error:', error);
@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     console.log('[API /api/tasks] DELETE request received');
-    
+
     try {
         const { searchParams } = new URL(request.url);
         const taskId = searchParams.get('id');
-        
+
         console.log('[API /api/tasks] Request params:', { taskId });
 
         if (!taskId) {
@@ -84,7 +84,7 @@ export async function DELETE(request: NextRequest) {
         });
 
         console.log('[API /api/tasks] Successfully deleted task');
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/tasks] Error:', error);

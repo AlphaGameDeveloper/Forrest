@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
     console.log('[API /api/garden/move] POST request received');
-    
+
     try {
         const body = await request.json();
         const { itemId, newGridX, newGridY } = body;
-        
+
         console.log('[API /api/garden/move] Request body:', { itemId, newGridX, newGridY });
 
         if (!itemId || newGridX === undefined || newGridY === undefined) {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('[API /api/garden/move] Successfully moved item:', { itemId, newGridX, newGridY });
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/garden/move] Error:', error);

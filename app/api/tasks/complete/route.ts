@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
     console.log('[API /api/tasks/complete] POST request received');
-    
+
     try {
         const body = await request.json();
         const { taskId } = body;
-        
+
         console.log('[API /api/tasks/complete] Request body:', { taskId });
 
         const userId = await getUserSession();
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('[API /api/tasks/complete] Successfully completed task');
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/tasks/complete] Error:', error);

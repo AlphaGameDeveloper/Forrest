@@ -28,7 +28,7 @@ export default function TaskList({ tasks }: TaskListProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTask }),
       });
-      
+
       if (response.ok) {
         setNewTask('');
         // Refresh to get updated data
@@ -56,7 +56,7 @@ export default function TaskList({ tasks }: TaskListProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskId }),
       });
-      
+
       if (response.ok) {
         // Refresh to get updated data
         window.location.reload();
@@ -71,7 +71,7 @@ export default function TaskList({ tasks }: TaskListProps) {
       const response = await fetch(`/api/tasks?id=${taskId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         // Refresh to get updated data
         window.location.reload();
