@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { imageOverrides } from '../ImageOverrides';
 import Bird from './Bird';
@@ -28,6 +28,9 @@ export default function GardenGrid({ items }: GardenGridProps) {
   const gridSize = 8;
   const lipHorizontalOffset = -16; // Controls the horizontal Z-axis offset for lip edges (negative = inward)
   const lipVerticalOffset = 0 - 17; // Controls the vertical Y-axis offset for lip edges (negative = down, positive = up)
+  
+  // Debounce timer for hover state
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate random bird positions using useState with lazy initialization
   const [birdPositions] = useState(() => [
@@ -147,11 +150,25 @@ export default function GardenGrid({ items }: GardenGridProps) {
 
   const handleDragOver = (e: React.DragEvent, x: number, y: number) => {
     e.preventDefault();
+    
+    // Update immediately for responsiveness
     setHoveredTile({ x, y });
+    
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
   };
 
   const handleDragLeave = () => {
-    setHoveredTile(null);
+    // Debounce the clearing to prevent flickering
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredTile(null);
+    }, 50);
   };
 
   return (
@@ -456,7 +473,7 @@ export default function GardenGrid({ items }: GardenGridProps) {
                   >
 
                     <div
-                      className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'}`}
+                      className={`relative w-20 h-24 ${item.type !== 'rock' ? 'cursor-move' : 'cursor-default'} ${(item.type === 'tree' || item.type === 'big-tree') ? 'tree-sway-hover' : ''}`}
                       style={imageOverrides.find(override => override.type === item.type && override.variant === item.variant)?.adjustment}
                       title={`Type: ${item.type}, Variant: ${item.variant} (DB: ${item.id} @ ${item.gridX},${item.gridY})`}
                     >

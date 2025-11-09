@@ -71,3 +71,27 @@ body {
     opacity: 1;
   }
 }
+
+/* Tree sway animation on hover */
+@keyframes tree-sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+
+.tree-sway-hover {
+  transition: transform 0.3s ease;
+  transform-origin: bottom center;
+}
+
+.tree-sway-hover:hover {
+  animation: tree-sway 0.8s ease-in-out infinite;
+  /* Add a small delay before animation starts to prevent flickering */
+  animation-delay: 0.1s;
+}

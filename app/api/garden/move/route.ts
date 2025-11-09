@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
 
         console.log('[API /api/garden/move] Successfully moved item:', { itemId, newGridX, newGridY });
 
+        console.table({ itemId, newGridX, newGridY });
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[API /api/garden/move] Error:', error);
